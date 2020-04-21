@@ -115,8 +115,8 @@ const ask = async (): Promise<string> => {
       const projectname = ((answers as any).projectname as string).toLowerCase();
       const projecttype = (answers as any).projecttype as ProjectType;
 
-      if (needsRenovate) {
-        fs.copyFileSync('boilerplate/renovate.json', 'renovate.json');
+      if (!needsRenovate) {
+        fs.unlinkSync('renovate.json');
       }
 
       await setupPackageJson(projectname);
