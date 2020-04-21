@@ -5,7 +5,7 @@
 		"start": "node index.js",
 		"compile": "tsc",
 		"setup": "ts-node tsbp.setup.ts",
-		"postsetup": "npm uninstall @types/inquirer @types/npm chalk inquirer replace-in-file ts-node && shx rm tsbp.setup.ts"
+		"postsetup": "shx rm tsbp.setup.ts && npm uninstall @types/inquirer @types/npm chalk inquirer replace-in-file ts-node shx"
 	},
 	"dependencies": {},
 	"devDependencies": {
