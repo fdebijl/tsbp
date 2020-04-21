@@ -124,6 +124,7 @@ const ask = async (): Promise<string> => {
       if (!needsDocker) {
         console.log(chalk.green('Since Docker is not needed, you can simply start developing with the current setup!'));
         resolve(projectname);
+        return;
       }
 
       await selectProjectType(projecttype);
