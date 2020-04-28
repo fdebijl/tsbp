@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import replace, { ReplaceInFileConfig } from 'replace-in-file';
+import { ReplaceInFileConfig, replaceInFile } from 'replace-in-file';
 import fs from 'fs';
 import Path from 'path';
 
@@ -33,7 +33,7 @@ const applyProjectName = async (projectname: string, projecttype: ProjectType): 
           to: projectname
         }
 
-        const results = await replace(replaceOptions);
+        const results = await replaceInFile(replaceOptions);
         break;
       }
       case ProjectType.Cronjob: {
@@ -43,7 +43,7 @@ const applyProjectName = async (projectname: string, projecttype: ProjectType): 
           to: projectname
         }
 
-        await replace(replaceOptions);
+        await replaceInFile(replaceOptions);
 
         fs.renameSync('PROJECTNAME-cron', `${projectname}-cron`);
         break;
