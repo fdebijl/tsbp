@@ -15,7 +15,7 @@
 		"@typescript-eslint/eslint-plugin": "2.31.0",
 		"@typescript-eslint/parser": "2.31.0",
 		"chalk": "4.0.0",
-		"eslint": "6.8.0",
+		"eslint": "7.0.0",
 		"inquirer": "7.1.0",
 		"replace-in-file": "6.0.0",
 		"shx": "0.3.2",
