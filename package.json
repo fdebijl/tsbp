@@ -10,16 +10,16 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@types/inquirer": "6.5.0",
-		"@types/node": "13.13.6",
+		"@types/node": "13.13.9",
 		"@types/npm": "2.0.31",
-		"@typescript-eslint/eslint-plugin": "2.33.0",
-		"@typescript-eslint/parser": "2.33.0",
+		"@typescript-eslint/eslint-plugin": "2.34.0",
+		"@typescript-eslint/parser": "2.34.0",
 		"chalk": "4.0.0",
-		"eslint": "7.0.0",
+		"eslint": "7.1.0",
 		"inquirer": "7.1.0",
 		"replace-in-file": "6.0.0",
 		"shx": "0.3.2",
 		"ts-node": "8.10.1",
-		"typescript": "3.9.2"
+		"typescript": "3.9.3"
 	}
 }
