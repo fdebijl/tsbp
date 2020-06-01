@@ -19,7 +19,7 @@
 		"inquirer": "7.1.0",
 		"replace-in-file": "6.0.0",
 		"shx": "0.3.2",
-		"ts-node": "8.10.1",
+		"ts-node": "8.10.2",
 		"typescript": "3.9.3"
 	}
 }
