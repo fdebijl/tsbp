@@ -112,7 +112,7 @@ const setupPackageJson = async (projectname: string, needsJasmine: boolean): Pro
 
 const setupJasmine = async (): Promise<void> => {
   return new Promise(async (resolve) => {
-    console.log(chalk.blue('Installing Jasmine, this may take a moment...'));
+    console.log(chalk.green('Installing Jasmine, this may take a moment...'));
 
     fs.copyFileSync('boilerplate/jasmine.config.json', 'jasmine.config.json');
     await assertDirectory('test');
@@ -171,7 +171,7 @@ const ask = async (): Promise<string> => {
     ]).then(async (answers) => {
       const needsRenovate = ((answers as any).needsrenovate as boolean);
       const needsDocker = ((answers as any).needsdocker as boolean);
-      const needsJasmine = ((answers as any).needsdocker as boolean);
+      const needsJasmine = ((answers as any).needsjasmine as boolean);
       const projectname = ((answers as any).projectname as string).toLowerCase();
       let projecttype: ProjectType = ProjectType.Server;
 
