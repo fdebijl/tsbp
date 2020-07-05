@@ -1,11 +1,12 @@
 {
 	"private": true,
-	"main": "index.js",
 	"scripts": {
 		"start": "node index.js",
-		"compile": "tsc",
+    "compile": "tsc",
+    "presetup": "npm install",
+    "lint": "eslint \"./src/**/*.ts\" --max-warnings 2",
 		"setup": "ts-node tsbp.setup.ts",
-		"postsetup": "shx rm tsbp.setup.ts && npm uninstall @types/inquirer @types/npm chalk inquirer replace-in-file ts-node shx"
+		"postsetup": "shx rm tsbp.setup.ts && npm uninstall @types/inquirer @types/npm chalk inquirer replace-in-file shx && npm install"
 	},
 	"dependencies": {},
 	"devDependencies": {
