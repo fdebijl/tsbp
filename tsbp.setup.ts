@@ -84,7 +84,7 @@ const selectProjectType = async (projecttype: ProjectType): Promise<void> => {
       }
       case ProjectType.Cronjob: {
         fs.copyFileSync('boilerplate/Dockerfile-cron', 'Dockerfile');
-        fs.copyFileSync('boilerplate/PROJECTNAME-server', 'Dockerfile');
+        fs.copyFileSync('boilerplate/PROJECTNAME-cron', 'Dockerfile');
         break;
       }
     }
