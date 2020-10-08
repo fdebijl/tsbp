@@ -11,7 +11,7 @@ RUN npm run compile
 # Lean production image that just contains the dist directory (copied to the root of the workdir) and runtime dependencies
 FROM base as prod
 RUN npm ci --only=production
-COPY --from=builder /usr/src/%%PROJECTNAME%%/dist/* ./
+COPY --from=builder /usr/src/%%PROJECTNAME%%/dist ./
 
 # Setup cronjob
 RUN mkdir -p /etc/cron.d

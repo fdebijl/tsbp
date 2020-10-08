@@ -3,7 +3,7 @@
 	"scripts": {
 		"start": "node index.js",
     "compile": "tsc",
-    "presetup": "npm install",
+    "presetup": "npm ci",
     "lint": "eslint \"./src/**/*.ts\" --max-warnings 2",
 		"setup": "ts-node tsbp.setup.ts",
 		"postsetup": "shx rm tsbp.setup.ts && npm uninstall @types/inquirer @types/npm chalk inquirer replace-in-file shx && npm install"
