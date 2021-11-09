@@ -11,7 +11,7 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@types/inquirer": "7.3.3",
-		"@types/node": "13.13.52",
+		"@types/node": "16.11.7",
 		"@types/npm": "2.0.32",
 		"@typescript-eslint/eslint-plugin": "4.33.0",
 		"@typescript-eslint/parser": "4.33.0",
