@@ -10,7 +10,7 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@fdebijl/eslint-config": "1.0.0",
+		"@fdebijl/eslint-config": "1.1.0",
 		"@types/inquirer": "7.3.3",
 		"@types/node": "13.13.52",
 		"@types/npm": "7.19.0",
