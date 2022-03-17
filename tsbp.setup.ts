@@ -257,7 +257,9 @@ const ask = async (): Promise<string> => {
 
     const needsSemanticrelease = ((noDockerAnswers as any).needssemanticrelease as boolean);
     await setupPackageJson(projectname, needsJasmine, needsCodecov, needsSemanticrelease);
-    await setupSemanticRelease();
+    if (needsSemanticrelease) {
+      await setupSemanticRelease();
+    }
   } else {
     const dockerAnswers = inquirer.prompt([{
       type: 'list',

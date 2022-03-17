@@ -6,7 +6,7 @@
 		"presetup": "npm ci",
 		"lint": "eslint \"./src/**/*.ts\" --max-warnings 10",
 		"setup": "ts-node tsbp.setup.ts",
-		"postsetup": "shx rm tsbp.setup.ts && npm uninstall @types/inquirer @types/npm chalk inquirer replace-in-file shx && npm install"
+		"postsetup": "shx rm tsbp.setup.ts && npm uninstall @types/inquirer @types/npm chalk inquirer replace-in-file shx sort-package-json && npm install"
 	},
 	"devDependencies": {
 		"@fdebijl/eslint-config": "1.2.0",
