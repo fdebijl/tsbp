@@ -74,6 +74,16 @@ const applyProjectName = async (projectname: string, projecttype: ProjectType): 
   return milliseconds(500);
 };
 
+const applyNodeVersion = async (nodeVersion: number): Promise<void> => {
+  const replaceOptions: ReplaceInFileConfig = {
+    files: ['boilerplate/checks.yml', 'boilerplate/codecov.yml', 'boilerplate/release-nosentry.yml', 'boilerplate/release-sentry.yml'],
+    from: /__NODEVERSION__/g,
+    to: `${nodeVersion}`
+  }
+
+  await replaceInFile(replaceOptions);
+}
+
 const selectProjectType = async (projecttype: ProjectType): Promise<void> => {
   switch (projecttype) {
     case ProjectType.Server: {
@@ -90,7 +100,7 @@ const selectProjectType = async (projecttype: ProjectType): Promise<void> => {
   return milliseconds(500);
 };
 
-const setupPackageJson = async (projectname: string, needsJasmine: boolean, needsCodecov: boolean, needsSemanticrelease: boolean): Promise<void> => {
+const setupPackageJson = async (projectname: string, needsJasmine: boolean, needsCodecov: boolean, needsSemanticrelease: boolean, nodeVersion: number): Promise<void> => {
   const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
   packageJson.name = projectname;
   delete packageJson.scripts.presetup;
@@ -116,6 +126,11 @@ const setupPackageJson = async (projectname: string, needsJasmine: boolean, need
       registry: 'https://registry.npmjs.org/'
     };
     packageJson.scripts.prepare = 'npm run compile';
+  }
+
+  packageJson.engines = {
+    node: `~ ${nodeVersion}`,
+    npm: '>= 6'
   }
 
   const sortedJson = sortPackageJson(JSON.stringify(packageJson, null, 2));
@@ -181,11 +196,38 @@ const setupCodecov = async (): Promise<void> => {
   });
 }
 
-const setupSemanticRelease = async (): Promise<void> => {
+const setupSentry = async (): Promise<void> => {
+  return new Promise((resolve) => {
+    console.log(chalk.blue('Installing Sentry...'))
+
+    // Install Codecov dependencies with pinned versions (-E, aka --save-exact)
+    const child = spawn('npm', ['install', '-D', '-E', '@sentry/node', '@sentry/tracing'], {cwd: __dirname, shell: true});
+
+    child.stderr.on('data', (data) => {
+      // Uncomment the next line to pipe installation errors to the wizard screen
+      // process.stdout.write(data);
+    });
+
+    child.on('exit', () => {
+      console.log(chalk.green('Done :)'))
+      resolve();
+    });
+  });
+}
+
+const setupSemanticRelease = async (withSentry: boolean): Promise<void> => {
   return new Promise(async (resolve) => {
+    await assertDirectory('.github/workflows');
+
     console.log(chalk.blue('Installing Semantic Release...'))
 
     fs.copyFileSync('boilerplate/.releaserc.json', '.releaserc.json');
+
+    if (withSentry) {
+      fs.copyFileSync('boilerplate/release-sentry.yml', '.github/workflows/release.yml');
+    } else {
+      fs.copyFileSync('boilerplate/release-nosentry.yml', '.github/workflows/release.yml');
+    }
 
     // Install Codecov dependencies with pinned versions (-E, aka --save-exact)
     const child = spawn('npm', ['install', '-D', '-E', 'semantic-release', 'semantic-release-conventional-commits', '@semantic-release/changelog', '@semantic-release/git'], {cwd: __dirname, shell: true});
@@ -207,7 +249,9 @@ const setupGithubActions = async (): Promise<void> => {
   fs.copyFileSync('boilerplate/checks.yml', '.github/workflows/checks.yml');
 }
 
-const ask = async (): Promise<string> => {
+const ask = async (): Promise<{ projectname: string, secrets: string[] }> => {
+  const secrets = [];
+
   const answers = await inquirer.prompt([
     {
       type: 'confirm',
@@ -230,9 +274,21 @@ const ask = async (): Promise<string> => {
       message: 'Does this project need Codecov? (Test Coverage Calculation)'
     },
     {
+      type: 'confirm',
+      name: 'needssentry',
+      message: 'Does this project need Sentry support? (Error Reporting)',
+      default: 'N',
+    },
+    {
       type: 'input',
       name: 'projectname',
       message: 'What is the name of this project? This value will be used in the Dockerfile, package.json and the cronjob (if applicable):'
+    },
+    {
+      type: 'number',
+      name: 'nodeversion',
+      message: 'Which major node version (e.g. 12, 14, 16) should this project use?',
+      default: '16'
     }
   ]);
 
@@ -240,12 +296,18 @@ const ask = async (): Promise<string> => {
   const needsDocker = ((answers as any).needsdocker as boolean);
   const needsJasmine = ((answers as any).needsjasmine as boolean);
   const needsCodecov = ((answers as any).needscodecov as boolean);
+  const needsSentry = ((answers as any).needssentry as boolean);
   const projectname = ((answers as any).projectname as string).toLowerCase();
+  const nodeversion = ((answers as any).nodeversion as number);
   let projecttype: ProjectType = ProjectType.Server;
+
+  await applyNodeVersion(nodeversion);
 
   if (!needsRenovate) {
     fs.unlinkSync('renovate.json');
   }
+
+  await setupGithubActions();
 
   if (!needsDocker) {
     const noDockerAnswers = await inquirer.prompt([{
@@ -255,12 +317,13 @@ const ask = async (): Promise<string> => {
     }]);
 
     const needsSemanticrelease = ((noDockerAnswers as any).needssemanticrelease as boolean);
-    await setupPackageJson(projectname, needsJasmine, needsCodecov, needsSemanticrelease);
+    await setupPackageJson(projectname, needsJasmine, needsCodecov, needsSemanticrelease, nodeversion);
     if (needsSemanticrelease) {
-      await setupSemanticRelease();
+      secrets.push('NPM_TOKEN');
+      await setupSemanticRelease(needsSentry);
     }
   } else {
-    const dockerAnswers = inquirer.prompt([{
+    const dockerAnswers = await inquirer.prompt([{
       type: 'list',
       name: 'projecttype',
       choices: ['Server', 'Cronjob'],
@@ -271,7 +334,7 @@ const ask = async (): Promise<string> => {
 
     await selectProjectType(projecttype);
     await applyProjectName(projectname, projecttype);
-    await setupPackageJson(projectname, needsJasmine, needsCodecov, false);
+    await setupPackageJson(projectname, needsJasmine, needsCodecov, false, nodeversion);
   }
 
   if (needsJasmine) {
@@ -282,15 +345,24 @@ const ask = async (): Promise<string> => {
     await setupCodecov();
   }
 
-  await setupGithubActions();
+  if (needsSentry) {
+    secrets.push('SENTRY_AUTH_TOKEN');
+    secrets.push('SENTRY_ORG');
+    secrets.push('SENTRY_PROJECT');
+    await setupSentry();
+  }
 
-  return projectname;
+  return { projectname, secrets };
 }
 
 const init = (): void => {
   console.log(chalk.green('Fdebijl\'s TypeScript BoilerPlate Setup'))
-  ask().then((projectname) => {
+  ask().then(({ projectname, secrets }) => {
     console.log(chalk.green('\nSetup finished, npm will now remove all setup-related packages. You may have to manually remove the \'postsetup\' script from package.json.'))
+
+    if (secrets.length > 0) {
+      console.log(chalk.green(`Add the following secrets to the repository:\n${secrets.join('\n')}`));
+    }
 
     deleteFolderRecursive(Path.resolve('boilerplate'));
     fs.writeFileSync('README.md', `# ${projectname || 'New TS Project'}\n\n*Enter a short description for the project here.*`);
