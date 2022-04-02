@@ -1,4 +1,4 @@
-name: Upload Codecov
+name: Release
 
 on:
   push:
@@ -6,21 +6,24 @@ on:
       - master
 
 jobs:
-  test:
-    name: Test
+  release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: __NODEVERSION__
       - name: Install dependencies
         run: npm ci
-      - name: Run tests
-        run: npm run test:coverage
+      - name: Build
+        run: npm run compile
+      - name: Release
         env:
-          CI: true
-          NODE_ENV: ci
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm run semanticrelease
