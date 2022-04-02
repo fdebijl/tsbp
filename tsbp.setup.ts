@@ -111,7 +111,6 @@ const setupPackageJson = async (projectname: string, needsJasmine: boolean, need
     packageJson.description = 'Placeholder description';
     packageJson.main = 'dist/index.js';
     packageJson.files = [ 'dist/**/*' ];
-    packageJson.release = { analyzeCommits: 'semantic-release-conventional-commits' };
     packageJson.publishConfig = {
       access: 'public',
       registry: 'https://registry.npmjs.org/'
