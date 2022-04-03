@@ -76,10 +76,10 @@ const applyProjectName = async (projectname: string, projecttype: ProjectType): 
 
 const applyNodeVersion = async (nodeVersion: number): Promise<void> => {
   const replaceOptions: ReplaceInFileConfig = {
-    files: ['boilerplate/checks.yml', 'boilerplate/codecov.yml', 'boilerplate/release-nosentry.yml', 'boilerplate/release-sentry.yml'],
+    files: ['boilerplate/checks.yml', 'boilerplate/codecov.yml', 'boilerplate/release-nosentry.yml', 'boilerplate/release-sentry.yml', 'boilerplate/acron.dockerfile', 'boilerplate/aserver.dockerfile'],
     from: /__NODEVERSION__/g,
     to: `${nodeVersion}`
-  }
+  };
 
   await replaceInFile(replaceOptions);
 }
