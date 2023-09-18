@@ -19,7 +19,7 @@
 		"chalk": "4.1.2",
 		"eslint": "8.42.0",
 		"inquirer": "8.2.5",
-		"replace-in-file": "6.3.5",
+		"replace-in-file": "7.0.1",
 		"shx": "0.3.4",
 		"sort-package-json": "1.57.0",
 		"ts-node": "10.9.1",
