@@ -342,6 +342,7 @@ const ask = async (): Promise<{ projectname: string, secrets: string[] }> => {
   }
 
   if (needsCodecov) {
+    secrets.push('CODECOV_TOKEN');
     await setupCodecov();
   }
 
