@@ -112,7 +112,7 @@ const setupPackageJson = async (projectname: string, needsJasmine: boolean, need
 
   if (needsCodecov) {
     // eslint-disable-next-line no-useless-escape
-    packageJson.scripts['test:coverage'] = 'nyc -e .ts -x \"*.spec.ts\" -x \"dist/**\" -x \"test/**\" --reporter=json jasmine-ts --config=jasmine.config.json --random=false && mv coverage/coverage-final.json coverage/coverage.json && codecov'
+    packageJson.scripts['test:coverage'] = 'nyc -e .ts -x \"*.spec.ts\" -x \"dist/**\" -x \"test/**\" --reporter=json jasmine-ts --config=jasmine.config.json --random=false'
   }
 
   if (needsSemanticrelease) {
@@ -182,7 +182,7 @@ const setupCodecov = async (): Promise<void> => {
     fs.copyFileSync('boilerplate/codecov.yml', '.github/workflows/codecov.yml');
 
     // Install Codecov dependencies with pinned versions (-E, aka --save-exact)
-    const child = spawn('npm', ['install', '-D', '-E', 'cash-mv', 'codecov', 'nyc'], {cwd: __dirname, shell: true});
+    const child = spawn('npm', ['install', '-D', '-E', 'nyc'], {cwd: __dirname, shell: true});
 
     child.stderr.on('data', (data) => {
       // Uncomment the next line to pipe installation errors to the wizard screen
@@ -250,7 +250,7 @@ const setupGithubActions = async (): Promise<void> => {
 }
 
 const ask = async (): Promise<{ projectname: string, secrets: string[] }> => {
-  const secrets = [];
+  const secrets: string[] = [];
 
   const answers = await inquirer.prompt([
     {
@@ -287,8 +287,8 @@ const ask = async (): Promise<{ projectname: string, secrets: string[] }> => {
     {
       type: 'number',
       name: 'nodeversion',
-      message: 'Which major node version (e.g. 12, 14, 16) should this project use?',
-      default: '16'
+      message: 'Which major node version (e.g. 20, 22, 24) should this project use?',
+      default: '20'
     }
   ]);
 
@@ -342,6 +342,7 @@ const ask = async (): Promise<{ projectname: string, secrets: string[] }> => {
   }
 
   if (needsCodecov) {
+    secrets.push('CODECOV_TOKEN');
     await setupCodecov();
   }
 
@@ -361,7 +362,9 @@ const init = (): void => {
     console.log(chalk.green('\nSetup finished, npm will now remove all setup-related packages. You may have to manually remove the \'postsetup\' script from package.json.'))
 
     if (secrets.length > 0) {
-      console.log(chalk.green(`Add the following secrets to the repository:\n${secrets.join('\n')}`));
+      console.log(chalk.green(`Add the following secrets to the repository and/or your .env:\n${secrets.join('\n')}`));
+
+      fs.writeFileSync('example.env', secrets.map(secret => `${secret}=PLACEHOLDER`).join('\n'));
     }
 
     deleteFolderRecursive(Path.resolve('boilerplate'));
