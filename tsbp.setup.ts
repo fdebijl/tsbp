@@ -362,7 +362,9 @@ const init = (): void => {
     console.log(chalk.green('\nSetup finished, npm will now remove all setup-related packages. You may have to manually remove the \'postsetup\' script from package.json.'))
 
     if (secrets.length > 0) {
-      console.log(chalk.green(`Add the following secrets to the repository:\n${secrets.join('\n')}`));
+      console.log(chalk.green(`Add the following secrets to the repository and/or your .env:\n${secrets.join('\n')}`));
+
+      fs.writeFileSync('example.env', secrets.map(secret => `${secret}=PLACEHOLDER`).join('\n'));
     }
 
     deleteFolderRecursive(Path.resolve('boilerplate'));
