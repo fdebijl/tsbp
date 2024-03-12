@@ -1,10 +1,11 @@
 name: PR Checks
 
-on:
-  pull_request:
-    branches:
-      - master
-      - main
+on: [push]
+
+env:
+  NODE_VERSION: __NODEVERSION__
+  CI: true
+  NODE_ENV: ci
 
 jobs:
   test:
@@ -16,14 +17,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          version: __NODEVERSION__
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install dependencies
         run: npm ci
       - name: Run tests
         run: npm test:coverage
         env:
-          CI: true
-          NODE_ENV: ci
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   lint:
     name: Lint
@@ -34,7 +33,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          version: __NODEVERSION__
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install dependencies
         run: npm ci
       - name: Run lint
@@ -48,7 +47,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          version: __NODEVERSION__
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install dependencies
         run: npm ci
       - name: Compile
