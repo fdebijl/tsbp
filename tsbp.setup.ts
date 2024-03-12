@@ -76,7 +76,7 @@ const applyProjectName = async (projectname: string, projecttype: ProjectType): 
 
 const applyNodeVersion = async (nodeVersion: number): Promise<void> => {
   const replaceOptions: ReplaceInFileConfig = {
-    files: ['boilerplate/checks.yml', 'boilerplate/codecov.yml', 'boilerplate/release-nosentry.yml', 'boilerplate/release-sentry.yml', 'boilerplate/acron.dockerfile', 'boilerplate/aserver.dockerfile'],
+    files: ['boilerplate/checks.yml', 'boilerplate/release-nosentry.yml', 'boilerplate/release-sentry.yml', 'boilerplate/acron.dockerfile', 'boilerplate/aserver.dockerfile'],
     from: /__NODEVERSION__/g,
     to: `${nodeVersion}`
   };
@@ -179,7 +179,6 @@ const setupCodecov = async (): Promise<void> => {
     console.log(chalk.blue('Installing Codecov...'))
 
     await assertDirectory('.github/workflows');
-    fs.copyFileSync('boilerplate/codecov.yml', '.github/workflows/codecov.yml');
 
     // Install Codecov dependencies with pinned versions (-E, aka --save-exact)
     const child = spawn('npm', ['install', '-D', '-E', 'nyc'], {cwd: __dirname, shell: true});
