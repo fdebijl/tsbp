@@ -1,7 +1,7 @@
 import fs from 'fs';
 import Path from 'path';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { confirm, input, number, select } from '@inquirer/prompts';
 import { spawn } from 'child_process';
 import sortPackageJson from 'sort-package-json';
 import { ReplaceInFileConfig, replaceInFile } from 'replace-in-file';
@@ -17,9 +17,9 @@ const deleteFolderRecursive = (path: string): void => {
   if (fs.existsSync(path)) {
     fs.readdirSync(path).forEach((file) => {
       const curPath = Path.join(path, file);
-      if (fs.lstatSync(curPath).isDirectory()) { // recurse
+      if (fs.lstatSync(curPath).isDirectory()) {
         deleteFolderRecursive(curPath);
-      } else { // delete file
+      } else {
         fs.unlinkSync(curPath);
       }
     });
@@ -48,17 +48,17 @@ const assertDirectory = async (path: string): Promise<void> => {
 const applyProjectName = async (projectname: string, projecttype: ProjectType): Promise<void> => {
   switch (projecttype) {
     case ProjectType.Server: {
-      const replaceOptions: ReplaceInFileConfig = {
+      const replaceOptions = {
         files: ['Dockerfile'],
         from: /%%PROJECTNAME%%/g,
         to: projectname
-      }
+      } satisfies ReplaceInFileConfig;
 
       await replaceInFile(replaceOptions);
       break;
     }
     case ProjectType.Cronjob: {
-      const replaceOptions: ReplaceInFileConfig = {
+      const replaceOptions = {
         files: ['Dockerfile', 'PROJECTNAME-cron'],
         from: /%%PROJECTNAME%%/g,
         to: projectname
@@ -75,11 +75,11 @@ const applyProjectName = async (projectname: string, projecttype: ProjectType): 
 };
 
 const applyNodeVersion = async (nodeVersion: number): Promise<void> => {
-  const replaceOptions: ReplaceInFileConfig = {
+  const replaceOptions = {
     files: ['boilerplate/checks.yml', 'boilerplate/release-nosentry.yml', 'boilerplate/release-sentry.yml', 'boilerplate/acron.dockerfile', 'boilerplate/aserver.dockerfile'],
     from: /__NODEVERSION__/g,
     to: `${nodeVersion}`
-  };
+  } satisfies ReplaceInFileConfig;
 
   await replaceInFile(replaceOptions);
 }
@@ -251,53 +251,14 @@ const setupGithubActions = async (): Promise<void> => {
 const ask = async (): Promise<{ projectname: string, secrets: string[] }> => {
   const secrets: string[] = [];
 
-  const answers = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'needsrenovate',
-      message: 'Does this project need Renovate? (Automatic Dependency Updates)'
-    },
-    {
-      type: 'confirm',
-      name: 'needsdocker',
-      message: 'Does this project need Docker? (Containerisation)'
-    },
-    {
-      type: 'confirm',
-      name: 'needsjasmine',
-      message: 'Does this project need Jasmine? (Unit Testing)'
-    },
-    {
-      type: 'confirm',
-      name: 'needscodecov',
-      message: 'Does this project need Codecov? (Test Coverage Calculation)'
-    },
-    {
-      type: 'confirm',
-      name: 'needssentry',
-      message: 'Does this project need Sentry support? (Error Reporting)',
-      default: 'N',
-    },
-    {
-      type: 'input',
-      name: 'projectname',
-      message: 'What is the name of this project? This value will be used in the Dockerfile, package.json and the cronjob (if applicable):'
-    },
-    {
-      type: 'number',
-      name: 'nodeversion',
-      message: 'Which major node version (e.g. 20, 22, 24) should this project use?',
-      default: '20'
-    }
-  ]);
+  const needsRenovate = await confirm({ message: 'Does this project need Renovate? (Automatic Dependency Updates)' });
+  const needsDocker = await confirm({ message: 'Does this project need Docker? (Containerisation)' });
+  const needsJasmine = await confirm({ message: 'Does this project need Jasmine? (Unit Testing)' });
+  const needsCodecov = await confirm({ message: 'Does this project need Codecov? (Test Coverage Calculation)' });
+  const needsSentry = await confirm({ message: 'Does this project need Sentry support? (Error Reporting)', default: false });
+  const projectname = (await input({ message: 'What is the name of this project? This value will be used in the Dockerfile, package.json and the cronjob (if applicable):' })).toLowerCase();
+  const nodeversion = await number({ message: 'Which major node version (e.g. 20, 22, 24) should this project use?', default: 20 }) as number;
 
-  const needsRenovate = ((answers as any).needsrenovate as boolean);
-  const needsDocker = ((answers as any).needsdocker as boolean);
-  const needsJasmine = ((answers as any).needsjasmine as boolean);
-  const needsCodecov = ((answers as any).needscodecov as boolean);
-  const needsSentry = ((answers as any).needssentry as boolean);
-  const projectname = ((answers as any).projectname as string).toLowerCase();
-  const nodeversion = ((answers as any).nodeversion as number);
   let projecttype: ProjectType = ProjectType.Server;
 
   await applyNodeVersion(nodeversion);
@@ -309,11 +270,7 @@ const ask = async (): Promise<{ projectname: string, secrets: string[] }> => {
   await setupGithubActions();
 
   if (!needsDocker) {
-    const noDockerAnswers = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'needssemanticrelease',
-      message: 'Does this project need Semantic Release? (Automatic Releases to NPM)'
-    }]);
+    const noDockerAnswers = await confirm({ message: 'Does this project need Semantic Release? (Automatic Releases to NPM)', default: false });
 
     const needsSemanticrelease = ((noDockerAnswers as any).needssemanticrelease as boolean);
     await setupPackageJson(projectname, needsJasmine, needsCodecov, needsSemanticrelease, nodeversion);
@@ -322,12 +279,10 @@ const ask = async (): Promise<{ projectname: string, secrets: string[] }> => {
       await setupSemanticRelease(needsSentry);
     }
   } else {
-    const dockerAnswers = await inquirer.prompt([{
-      type: 'list',
-      name: 'projecttype',
+    const dockerAnswers = await select({
       choices: ['Server', 'Cronjob'],
       message: 'How should this project\'s container run? As a persistent server (i.e. run the main file until it crashes or exits) or a cronjob (i.e. a task that needs to be repeated every X minutes):'
-    }]);
+    });
 
     projecttype = (dockerAnswers as any).projecttype as ProjectType;
 
