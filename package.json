@@ -11,8 +11,8 @@
 	"devDependencies": {
 		"@fdebijl/eslint-config": "1.3.0",
 		"@fdebijl/tsconfig": "1.2.2",
-		"@inquirer/prompts": "7.4.1",
-		"@types/node": "22.14.0",
+		"@inquirer/prompts": "7.5.1",
+		"@types/node": "22.15.17",
 		"@types/npm": "7.19.3",
 		"@typescript-eslint/eslint-plugin": "7.18.0",
 		"@typescript-eslint/parser": "7.18.0",
@@ -21,7 +21,7 @@
 		"replace-in-file": "8.3.0",
 		"shx": "0.4.0",
 		"sort-package-json": "2.15.1",
-		"tsx": "4.19.3",
+		"tsx": "4.19.4",
 		"typescript": "5.8.3"
 	}
 }
