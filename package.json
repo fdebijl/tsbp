@@ -20,7 +20,7 @@
 		"eslint": "8.57.1",
 		"replace-in-file": "8.4.0",
 		"shx": "0.4.0",
-		"sort-package-json": "2.15.1",
+		"sort-package-json": "3.6.1",
 		"tsx": "4.21.0",
 		"typescript": "5.9.3"
 	}
