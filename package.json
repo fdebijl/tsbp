@@ -22,6 +22,6 @@
 		"shx": "0.4.0",
 		"sort-package-json": "2.15.1",
 		"tsx": "4.21.0",
-		"typescript": "5.9.3"
+		"typescript": "6.0.3"
 	}
 }
