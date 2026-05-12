@@ -9,7 +9,7 @@
 		"postsetup": "shx rm tsbp.setup.ts LICENSE && npm uninstall @types/npm @inquirer/prompts chalk  replace-in-file shx sort-package-json tsx && npm install"
 	},
 	"devDependencies": {
-		"@fdebijl/eslint-config": "1.3.0",
+		"@fdebijl/eslint-config": "2.1.0",
 		"@fdebijl/tsconfig": "1.2.2",
 		"@inquirer/prompts": "7.10.1",
 		"@types/node": "22.19.17",
