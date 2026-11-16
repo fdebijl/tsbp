@@ -1,0 +1,39 @@
+# Approves and enables auto-merge (squash) for Dependabot pull requests that contain patch or minor updates.
+# Major updates are left for manual review.
+#
+# Requirements:
+#   - Settings > General > Pull Requests > "Allow auto-merge" must be enabled.
+#   - The default branch needs branch protection (or a ruleset) with required status checks, e.g. the jobs from
+#     checks.yml. Without required checks, `gh pr merge --auto` merges the pull request immediately.
+#   - If the branch requires an approving review, enable Settings > Actions > General >
+#     "Allow GitHub Actions to create and approve pull requests" so the approval below counts.
+name: Dependabot auto-merge
+
+on: pull_request
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  automerge:
+    name: Auto-merge
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write # merge the pull request
+      pull-requests: write # approve the pull request and enable auto-merge
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+      - name: Approve and enable auto-merge
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --squash "$PR_URL"

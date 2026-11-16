@@ -1,0 +1,35 @@
+# Static analysis of the GitHub Actions workflows in this repository, see https://docs.zizmor.sh
+# Findings are printed to the job log and as annotations, and fail the job. This works on private repositories
+# without GitHub Advanced Security. With Advanced Security (or on a public repository) you can switch to SARIF
+# upload instead: drop `advanced-security` and `annotations`, and grant `security-events: write` and `actions: read`.
+name: zizmor
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # check out private repositories
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          advanced-security: false
+          annotations: true
