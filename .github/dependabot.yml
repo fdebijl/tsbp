@@ -9,3 +9,35 @@ updates:
     cooldown:
       default-days: 14
       semver-major-days: 28
+
+  # Keeps the workflow templates in /boilerplate pinned to current releases. Outside of the repository root, the
+  # github-actions ecosystem only scans the configured directory itself, so it has to point at the workflows folder.
+  - package-ecosystem: "github-actions"
+    directory: "/boilerplate/.github/workflows"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+    rebase-strategy: "auto"
+    cooldown:
+      default-days: 14
+      semver-major-days: 28
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Keeps the Node.js image in the Dockerfile templates (aserver.dockerfile, acron.dockerfile) current. Majors are
+  # ignored because odd-numbered releases are not LTS; move to the next LTS major by hand.
+  - package-ecosystem: "docker"
+    directory: "/boilerplate"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+    rebase-strategy: "auto"
+    cooldown:
+      default-days: 14
+      semver-major-days: 28
+    ignore:
+      - dependency-name: "node"
+        update-types:
+          - "version-update:semver-major"
