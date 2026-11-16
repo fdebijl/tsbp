@@ -20,7 +20,6 @@ updates:
     rebase-strategy: "auto"
     cooldown:
       default-days: 14
-      semver-major-days: 28
     groups:
       github-actions:
         patterns:
@@ -36,7 +35,6 @@ updates:
     rebase-strategy: "auto"
     cooldown:
       default-days: 14
-      semver-major-days: 28
     ignore:
       - dependency-name: "node"
         update-types:
