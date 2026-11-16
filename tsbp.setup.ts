@@ -557,32 +557,27 @@ export const apply = (answers: Answers, resolved: Resolved, root = process.cwd()
     copyTemplate('jasmine.config.json', 'jasmine.config.json');
     copyTemplate('index.spec.ts', 'test/index.spec.ts');
 
-    // Add linting for Jasmine, courtesy of https://github.com/tlvince/eslint-plugin-jasmine
-    if (fs.existsSync(at('.eslintrc.json'))) {
-      const eslintrc = readJson<{ plugins?: string[]; env?: Record<string, boolean>; extends?: string[] | string }>(at('.eslintrc.json'));
-      eslintrc.plugins = [...new Set([...(eslintrc.plugins ?? []), 'jasmine'])];
-      eslintrc.env = { ...eslintrc.env, jasmine: true };
-      eslintrc.extends = [...(typeof eslintrc.extends === 'string' ? [eslintrc.extends] : eslintrc.extends ?? []), 'plugin:jasmine/recommended'];
-      fs.writeFileSync(at('.eslintrc.json'), `${JSON.stringify(eslintrc, null, 2)}\n`);
-    } else {
-      warnings.push('No .eslintrc.json found, add eslint-plugin-jasmine to your ESLint config manually.');
-    }
+    // Add linting for Jasmine, courtesy of https://github.com/tlvince/eslint-plugin-jasmine (no flat preset, so take its rules)
+    fs.writeFileSync(at('eslint.config.mjs'), [
+      'import fdebijlConfig from \'@fdebijl/eslint-config\';',
+      'import jasmine from \'eslint-plugin-jasmine\';',
+      '',
+      'export default [',
+      '  ...fdebijlConfig,',
+      '  {',
+      '    files: [\'test/**/*.ts\'],',
+      '    plugins: { jasmine },',
+      '    rules: jasmine.configs.recommended.rules',
+      '  }',
+      '];',
+      ''
+    ].join('\n'));
 
+    // tsconfig only includes src/, specs are run by tsx; the jasmine types are for editor support
+    const tsconfig = readJson<{ compilerOptions?: { types?: string[] } & Record<string, unknown> }>(at('tsconfig.json'));
+    tsconfig.compilerOptions = { ...tsconfig.compilerOptions, types: [...new Set([...(tsconfig.compilerOptions?.types ?? ['node']), 'jasmine'])] };
+    fs.writeFileSync(at('tsconfig.json'), `${JSON.stringify(tsconfig, null, 2)}\n`);
   }
-
-  // The setup files are gone, and tests are run by tsx rather than built by tsc
-  const tsconfig = readJson<{ compilerOptions?: Record<string, unknown>; exclude?: string[] }>(at('tsconfig.json'));
-  const exclude = (tsconfig.exclude ?? []).filter((pattern) => pattern !== 'tsbp.setup.ts' && !pattern.startsWith(`${BOILERPLATE}/`));
-  if (answers.jasmine) {
-    tsconfig.compilerOptions = { ...tsconfig.compilerOptions, types: ['node', 'jasmine'] };
-    exclude.push('test/**/*.ts');
-  }
-  if (exclude.length > 0) {
-    tsconfig.exclude = exclude;
-  } else {
-    delete tsconfig.exclude;
-  }
-  fs.writeFileSync(at('tsconfig.json'), `${JSON.stringify(tsconfig, null, 2)}\n`);
 
   if (answers.codecov) {
     secrets.push('CODECOV_TOKEN');
