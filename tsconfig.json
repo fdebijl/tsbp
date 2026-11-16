@@ -2,10 +2,10 @@
   "extends": "@fdebijl/tsconfig",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
-	},
-  "exclude": [
-    "tsbp.setup.ts",
-    "boilerplate/**/*.ts"
+    "rootDir": "./src",
+    "types": ["node"]
+  },
+  "include": [
+    "src/**/*.ts"
   ]
 }
