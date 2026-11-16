@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    "docker:pinDigests"
+  ],
+  "minimumReleaseAge": "14 days",
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "description": "Automerge non-major updates once checks pass",
+      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
+      "automerge": true
+    },
+    {
+      "description": "Pinning does not introduce a new release, so there is nothing to wait for",
+      "matchUpdateTypes": ["pin", "pinDigest"],
+      "minimumReleaseAge": null
+    },
+    {
+      "description": "Give major updates more time to settle",
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "28 days"
+    },
+    {
+      "description": "Bump the Node.js major together with .nvmrc, @types/node and the Node.js image",
+      "matchPackageNames": ["node", "@types/node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+name: Checks
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CI: true
+  NODE_ENV: ci
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # tsbp:begin pm:pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # tsbp:end pm:pnpm
+      # tsbp:begin pm:yarn
+      # Corepack must be enabled before setup-node can resolve the Yarn cache folder, and Node >= 25 no longer
+      # bundles Corepack. Install Node first, add Corepack to it, then run setup-node again to restore the cache.
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Enable Corepack
+        run: npm install --global corepack@latest && corepack enable
+      # tsbp:end pm:yarn
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: __PM__
+      - name: Install dependencies
+        run: __PM_INSTALL__
+      - name: Lint
+        run: __PM_RUN__ lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # tsbp:begin pm:pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # tsbp:end pm:pnpm
+      # tsbp:begin pm:yarn
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Enable Corepack
+        run: npm install --global corepack@latest && corepack enable
+      # tsbp:end pm:yarn
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: __PM__
+      - name: Install dependencies
+        run: __PM_INSTALL__
+      - name: Compile
+        run: __PM_RUN__ compile
+  # tsbp:begin jasmine
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # tsbp:begin pm:pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # tsbp:end pm:pnpm
+      # tsbp:begin pm:yarn
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Enable Corepack
+        run: npm install --global corepack@latest && corepack enable
+      # tsbp:end pm:yarn
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: __PM__
+      - name: Install dependencies
+        run: __PM_INSTALL__
+      # tsbp:begin codecov
+      - name: Run tests with coverage
+        run: __PM_RUN__ test:coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+      # tsbp:end codecov
+      # tsbp:begin !codecov
+      - name: Run tests
+        run: __PM_RUN__ test
+      # tsbp:end !codecov
+  # tsbp:end jasmine

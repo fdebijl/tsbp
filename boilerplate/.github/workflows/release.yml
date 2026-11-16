@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the release commit and tag, create the GitHub release
+      issues: write # comment on issues included in the release
+      pull-requests: write # comment on pull requests included in the release
+      id-token: write # npm provenance / trusted publishing
+    steps:
+      # semantic-release authenticates its own pushes with GITHUB_TOKEN, so the checkout credentials are not needed
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # tsbp:begin pm:pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # tsbp:end pm:pnpm
+      # Dependency caching stays off in this workflow to rule out cache poisoning of a job holding release credentials
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # tsbp:begin pm:yarn
+      # Node >= 25 no longer bundles Corepack, so install it explicitly
+      - name: Enable Corepack
+        run: npm install --global corepack@latest && corepack enable
+      # tsbp:end pm:yarn
+      - name: Install dependencies
+        run: __PM_INSTALL__
+      - name: Build
+        run: __PM_RUN__ compile
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: __PM_RUN__ semanticrelease
+      # tsbp:begin sentry
+      - name: Determine release version
+        id: revision
+        run: echo "version=$(git describe --tags --always)" >> "$GITHUB_OUTPUT"
+      - name: Create Sentry release
+        uses: getsentry/action-release@d55c8c3b7375607e972b710f12926b676d89d7d2 # v3.8.0
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          environment: production
+          sourcemaps: ./dist
+          release: ${{ steps.revision.outputs.version }}
+      # tsbp:end sentry

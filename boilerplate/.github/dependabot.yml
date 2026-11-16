@@ -1,0 +1,54 @@
+version: 2
+updates:
+  # Covers npm, yarn and pnpm lockfiles
+  - package-ecosystem: "npm"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+    rebase-strategy: "auto"
+    cooldown:
+      default-days: 14
+      semver-major-days: 28
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Bump @types/node together with .nvmrc and the Node.js image
+      - dependency-name: "@types/node"
+        update-types:
+          - "version-update:semver-major"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+    rebase-strategy: "auto"
+    cooldown:
+      default-days: 14
+      semver-major-days: 28
+    groups:
+      github-actions-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+  # tsbp:begin docker
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+    rebase-strategy: "auto"
+    cooldown:
+      default-days: 14
+      semver-major-days: 28
+    ignore:
+      # Bump the Node.js major together with .nvmrc and @types/node
+      - dependency-name: "node"
+        update-types:
+          - "version-update:semver-major"
+  # tsbp:end docker
