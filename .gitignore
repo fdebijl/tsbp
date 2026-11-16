@@ -102,3 +102,15 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Yarn Berry (https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# pnpm
+.pnpm-store/
