@@ -5,21 +5,17 @@
 		"compile": "tsc",
 		"presetup": "npm ci",
 		"lint": "eslint \"./src/**/*.ts\" --max-warnings 10",
-		"setup": "tsx tsbp.setup.ts",
-		"postsetup": "shx rm tsbp.setup.ts LICENSE && npm uninstall @types/npm @inquirer/prompts chalk  replace-in-file shx sort-package-json tsx && npm install"
+		"setup": "tsx tsbp.setup.ts"
 	},
 	"devDependencies": {
 		"@fdebijl/eslint-config": "1.3.0",
 		"@fdebijl/tsconfig": "1.2.2",
 		"@inquirer/prompts": "7.10.1",
 		"@types/node": "22.19.17",
-		"@types/npm": "7.19.3",
 		"@typescript-eslint/eslint-plugin": "7.18.0",
 		"@typescript-eslint/parser": "7.18.0",
 		"chalk": "5.6.2",
 		"eslint": "8.57.1",
-		"replace-in-file": "8.4.0",
-		"shx": "0.4.0",
 		"sort-package-json": "2.15.1",
 		"tsx": "4.21.0",
 		"typescript": "5.9.3"
